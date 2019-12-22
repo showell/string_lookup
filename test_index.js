@@ -19,6 +19,7 @@ function get_test_prefixes(names) {
         res.add(name.slice(0, 1));
         res.add(name.slice(0, 2));
         res.add(name.slice(0, 3));
+        res.add(name.slice(0, 4));
     });
 
     let lst = Array.from(res);
@@ -35,10 +36,10 @@ function sanity_check() {
 }
 
 function get_time(f) {
-    let t1 = process.hrtime.bigint();
+    let t1 = process.hrtime();
     f();
-    let t2 = process.hrtime.bigint();
-    let elapsed = Number(t2 - t1) / 1000.0;
+    let t2 = process.hrtime(t1);
+    let elapsed = (t2[0] * 1e9 + t2[1]) / 1000;
     return elapsed;
 }
 
@@ -80,6 +81,16 @@ function main() {
     });
 
     test_index(verifier, naive_index);
+
+    let smart_index;
+
+    elapsed = get_time(function () {
+        let threshold = 500;
+        smart_index = index.make_index(names, threshold);
+    });
+    console.info('build smart', elapsed);
+
+    test_index(verifier, smart_index);
 }
 
 main();

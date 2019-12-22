@@ -1,10 +1,9 @@
 const NAIVE = 0;
 const SMART = 1;
 
-exports.make_index = function (vals) {
+exports.make_index = function (vals, threshold) {
     const start = 0;
     const end = vals.length;
-    const threshold = undefined;
     const offset = 0;
 
     return _build_index(
@@ -24,7 +23,7 @@ function _build_index(
     threshold,
     offset) {
 
-    if (!threshold) {
+    if (!threshold || (end - start < threshold)) {
         idx = { type: NAIVE};
         idx.vals = vals;
         idx.offset = offset;
@@ -34,14 +33,67 @@ function _build_index(
         return idx;
     }
 
-    throw Error('not implemented yet');
+    let indexes = {};
+
+    let i = start;
+    while (i < end) {
+        let sub_start = i;
+
+        if (offset >= vals[i].length) {
+            i += 1
+            continue
+        }
+
+        let letter = vals[i][offset];
+        i += 1;
+        while ((i < end) && (vals[i][offset] == letter)) {
+            i += 1;
+        }
+
+        let sub_end = i;
+
+        let idx = _build_index(
+                vals,
+                sub_start,
+                sub_end,
+                threshold,
+                offset+1
+                );
+
+        indexes[letter] = idx
+    }
+
+    smart_index = { type: SMART };
+    smart_index.vals = vals;
+    smart_index.indexes = indexes;
+    smart_index.offset = offset;
+    smart_index.start = start;
+    smart_index.end = end;
+
+    return smart_index;
 }
 
 exports.find = function (prefix, index) {
+    let offset = index.offset;
+    let vals = index.vals;
+
+    if (index.type == SMART) {
+        if (offset >= prefix.length) {
+            return vals.slice(index.start, index.end);
+        }
+
+        let letter = prefix[offset];
+        let indexes = index.indexes;
+        if (!indexes[letter]) {
+            return [];
+        }
+
+        let sub_index = indexes[letter];
+        return exports.find(prefix, sub_index)
+    }
+
     if (index.type == NAIVE) {
-        let offset = index.offset;
         let end_offset = prefix.length;
-        let vals = index.vals;
         let start = index.start;
         let end = index.end;
 
@@ -73,6 +125,7 @@ exports.find = function (prefix, index) {
 
         return vals.slice(i, j);
     }
+
 
     throw Error('unexpected');
 };
