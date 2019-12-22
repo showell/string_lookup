@@ -48,11 +48,15 @@ function test_index(verifier, idx) {
 
     let cnt = Object.keys(verifier).length;
 
+    Object.keys(verifier).forEach(function (prefix) {
+        let expected = verifier[prefix];
+        let actual = index.find(prefix, idx);
+        assert.deepEqual(expected, actual);
+    });
+
     let elapsed = get_time(function() {
         Object.keys(verifier).forEach(function (prefix) {
-            let expected = verifier[prefix];
-            let actual = index.find(prefix, idx);
-            assert.deepEqual(expected, actual);
+            index.find(prefix, idx);
         });
     });
 
