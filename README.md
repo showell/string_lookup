@@ -11,12 +11,21 @@ index, where each index is recursively either:
 I didn't try to conserve memory, but almost all the overhead
 is integers and pointers.  (I don't ever create new strings).
 
+## Test data
+
+I got just under 5k names from here:
+
+https://raw.githubusercontent.com/dominictarr/random-name/master/first-names.txt
+
+see my [names.txt](names.txt)
 
 ## Results
 
 For whatever reason, Python is slower than JS (node.js) in general
 on my box.  Although both languages are pretty fast per search
 on a smart index.
+
+Python:
 
 ~~~
 $ python test_index.py
@@ -36,6 +45,9 @@ TEST:
 # of vals 4945
 # of tests 1122
 avg cost (microseconds) 17.006773618538155
+~~~
+
+JS:
 
 ~~~
 $ node test_index.js
